@@ -1,9 +1,9 @@
-const express = require('express');
-const router = express.Router();
+// controllers/userController.js
+
 const User = require('../models/User');
 
-// ✅ GET current user info of user
-router.get('/me/:id', async (req, res) => {
+// GET user by ID (no password)
+exports.getUserById = async (req, res) => {
 	try {
 		const user = await User.findById(req.params.id).select('-password');
 		if (!user) return res.status(404).json({ error: 'User not found' });
@@ -11,10 +11,10 @@ router.get('/me/:id', async (req, res) => {
 	} catch (err) {
 		res.status(500).json({ error: 'Server error' });
 	}
-});
+};
 
-// ✅ PATCH update user info (name, skills, photo, etc.)
-router.patch('/me/:id', async (req, res) => {
+// UPDATE user by ID
+exports.updateUser = async (req, res) => {
 	try {
 		const updates = req.body;
 		const updatedUser = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select('-password');
@@ -23,10 +23,10 @@ router.patch('/me/:id', async (req, res) => {
 	} catch (err) {
 		res.status(500).json({ error: 'Failed to update user' });
 	}
-});
+};
 
-// ✅ GET search users by skill (only public profiles)
-router.get('/search', async (req, res) => {
+// SEARCH users by skill (public only)
+exports.searchUsersBySkill = async (req, res) => {
 	try {
 		const { skill } = req.query;
 		const users = await User.find({
@@ -37,17 +37,18 @@ router.get('/search', async (req, res) => {
 	} catch (err) {
 		res.status(500).json({ error: 'Failed to search users' });
 	}
-});
+};
 
-// ✅ PATCH toggle public/private profile
-router.patch('/privacy/:id', async (req, res) => {
+// TOGGLE privacy
+exports.togglePrivacy = async (req, res) => {
 	try {
 		const { isPublic } = req.body;
 		const updated = await User.findByIdAndUpdate(req.params.id, { isPublic }, { new: true });
-		res.json({ message: `Profile set to ${isPublic ? 'public' : 'private'}`, user: updated });
+		res.json({
+			message: `Profile set to ${isPublic ? 'public' : 'private'}`,
+			user: updated
+		});
 	} catch (err) {
 		res.status(500).json({ error: 'Failed to update privacy' });
 	}
-});
-
-module.exports = router;
+};
