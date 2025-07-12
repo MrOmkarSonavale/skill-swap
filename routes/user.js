@@ -1,4 +1,4 @@
-const upload = require('../middleware/upload');
+const upload = require('../middleware/cloudinary');
 // routes/user.js
 const express = require('express');
 const router = express.Router();
