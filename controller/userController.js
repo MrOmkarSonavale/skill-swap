@@ -5,11 +5,38 @@ const User = require('../models/User');
 // GET user by ID (no password)
 exports.getUserById = async (req, res) => {
 	try {
+
 		const user = await User.findById(req.params.id).select('-password');
 		if (!user) return res.status(404).json({ error: 'User not found' });
 		res.json(user);
 	} catch (err) {
 		res.status(500).json({ error: 'Server error' });
+	}
+};
+
+exports.uploadProfilePhoto = async (req, res) => {
+	try {
+		// Create the image path
+		const imagePath = `/uploads/${req.file.filename}`;
+
+		// Update user's profilePhoto field in DB
+		const updatedUser = await User.findByIdAndUpdate(
+			req.params.id,
+			{ profilePhoto: imagePath },
+			{ new: true }
+		);
+
+		if (!updatedUser) {
+			return res.status(404).json({ error: "User not found" });
+		}
+
+		res.status(200).json({
+			message: "Profile photo uploaded successfully",
+			user: updatedUser
+		});
+	} catch (err) {
+		console.error("Upload Error:", err);
+		res.status(500).json({ error: "Failed to upload profile photo" });
 	}
 };
 

@@ -21,12 +21,15 @@ mongoose.connect(process.env.MONGO_URI, {
 // ✅ Route files
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
-const swapRoutes = require('./routes/swap'); // (we’ll build this next)
+const swapRoutes = require('./routes/swap'); // prepare later
 
 // ✅ Mount Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/swaps', swapRoutes); // future
+app.use('/api/swaps', swapRoutes);
+
+//multer file 
+app.use('/uploads', express.static('uploads'));
 
 // ✅ Health Check
 app.get('/', (req, res) => {

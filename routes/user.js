@@ -1,53 +1,15 @@
+const upload = require('../middleware/upload');
+// routes/user.js
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
-
-// ✅ GET current user info of user
-router.get('/me/:id', async (req, res) => {
-	try {
-		const user = await User.findById(req.params.id).select('-password');
-		if (!user) return res.status(404).json({ error: 'User not found' });
-		res.json(user);
-	} catch (err) {
-		res.status(500).json({ error: 'Server error' });
-	}
-});
-
-// ✅ PATCH update user info (name, skills, photo, etc.)
-router.patch('/me/:id', async (req, res) => {
-	try {
-		const updates = req.body;
-		const updatedUser = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select('-password');
-		if (!updatedUser) return res.status(404).json({ error: 'User not found' });
-		res.json(updatedUser);
-	} catch (err) {
-		res.status(500).json({ error: 'Failed to update user' });
-	}
-});
-
-// ✅ GET search users by skill (only public profiles)
-router.get('/search', async (req, res) => {
-	try {
-		const { skill } = req.query;
-		const users = await User.find({
-			skillsOffered: { $regex: skill, $options: 'i' },
-			isPublic: true
-		}).select('-password');
-		res.json(users);
-	} catch (err) {
-		res.status(500).json({ error: 'Failed to search users' });
-	}
-});
-
-// ✅ PATCH toggle public/private profile
-router.patch('/privacy/:id', async (req, res) => {
-	try {
-		const { isPublic } = req.body;
-		const updated = await User.findByIdAndUpdate(req.params.id, { isPublic }, { new: true });
-		res.json({ message: `Profile set to ${isPublic ? 'public' : 'private'}`, user: updated });
-	} catch (err) {
-		res.status(500).json({ error: 'Failed to update privacy' });
-	}
-});
+const userController = require('../controller/userController');
+const auth = require('../middleware/auth');
+// Route bindings
+router.get('/me/:id', userController.getUserById);
+router.patch('/me/:id', auth, userController.updateUser);
+router.get('/search', userController.searchUsersBySkill);
+router.patch('/privacy/:id', userController.togglePrivacy);
+router.post('/upload/:id', auth, upload.single('profilePhoto'), userController.uploadProfilePhoto);
 
 module.exports = router;
+
