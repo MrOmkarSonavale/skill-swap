@@ -48,6 +48,11 @@ exports.login = async (req, res) => {
 
 	try {
 		const user = await User.findOne({ email });
+
+		if (user.isBanned) {
+			return res.status(403).json({ message: "You are banned from this platform." });
+		}
+
 		if (!user) return res.status(400).json({ error: 'Invalid credentials' });
 
 		const isMatch = await bcrypt.compare(password, user.password);
